@@ -10,7 +10,6 @@ public class ApplicationDbContext : DbContext
             public DbSet<User> Users { get; set; }
             public DbSet<Borrow> Borrows { get; set; }
             public DbSet<Login> Logins { get; set; }
-            public DbSet<UserLogin> UserLogin { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
