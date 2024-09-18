@@ -45,8 +45,8 @@ namespace Library_management_system.Controllers
             }
 
             // Retrieve the user from the database using the provided username
-            var user = await dbContext.UserLogin
-                .FirstOrDefaultAsync(u => u.UserName == login.UserName);
+            var user = await dbContext.Users
+                .FirstOrDefaultAsync(u => u.Name == login.UserName);
 
             // If no user is found, return Unauthorized
             if (user == null)
@@ -61,7 +61,7 @@ namespace Library_management_system.Controllers
                 var response = new LoginResponse
                 {
                     Message = "Login successful",
-                    User = user.UserName // Return the username of the logged-in user
+                    User = user.Name // Return the username of the logged-in user
                 };
                 return Ok(response); // Return a 200 OK response with the login info
             }
