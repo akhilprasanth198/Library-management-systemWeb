@@ -105,21 +105,29 @@ namespace Library_management_system.Controllers
 
             if (!string.IsNullOrEmpty(author))
             {
-                books = books.Where(b => b.Author.Contains(author));
+                books = books.Where(b => b.Author.ToLower().Contains(author.ToLower()));
             }
 
             if (!string.IsNullOrEmpty(language))
             {
-                books = books.Where(b => b.Language.Contains(language));
+                books = books.Where(b => b.Language.ToLower().Contains(language.ToLower()));
             }
 
             if (!string.IsNullOrEmpty(title))
             {
-                books = books.Where(b => b.Title.Contains(title));
+                books = books.Where(b => b.Title.ToLower().Contains(title.ToLower()));
             }
 
-            return Ok(books.ToList());
+            var filteredBooks = books.ToList();
+
+            if (!filteredBooks.Any())
+            {
+                return NotFound("No books found matching the search criteria.");
+            }
+
+            return Ok(filteredBooks);
         }
+
 
 
         private bool BookExists(int id)
