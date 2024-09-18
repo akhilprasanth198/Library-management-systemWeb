@@ -9,7 +9,7 @@ public class ApplicationDbContext : DbContext
             public DbSet<Book> Books { get; set; }
             public DbSet<User> Users { get; set; }
             public DbSet<Borrow> Borrows { get; set; }
-
+            public DbSet<Login> Logins { get; set; }
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
                 base.OnModelCreating(modelBuilder);
