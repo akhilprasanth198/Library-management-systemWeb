@@ -98,6 +98,29 @@ namespace Library_management_system.Controllers
 
             return NoContent();
         }
+        [HttpGet("search")]
+        public IActionResult SearchBooks(string? author = null, string? language = null, string? title = null)
+        {
+            var books = _context.Books.AsQueryable();
+
+            if (!string.IsNullOrEmpty(author))
+            {
+                books = books.Where(b => b.Author.Contains(author));
+            }
+
+            if (!string.IsNullOrEmpty(language))
+            {
+                books = books.Where(b => b.Language.Contains(language));
+            }
+
+            if (!string.IsNullOrEmpty(title))
+            {
+                books = books.Where(b => b.Title.Contains(title));
+            }
+
+            return Ok(books.ToList());
+        }
+
 
         private bool BookExists(int id)
         {
