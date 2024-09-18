@@ -1,9 +1,11 @@
-﻿using Library_management_system.Models;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using static System.Reflection.Metadata.BlobBuilder;
+using Microsoft.EntityFrameworkCore;
+using Library_management_system.Models;
 
 namespace Library_management_system.Controllers
 {
@@ -20,36 +22,36 @@ namespace Library_management_system.Controllers
 
         // GET: api/Books
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Book>>> GetBook()
+        public async Task<ActionResult<IEnumerable<Book>>> GetBooks()
         {
             return await _context.Books.ToListAsync();
         }
 
         // GET: api/Books/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Book>> GetBooks(int id)
+        public async Task<ActionResult<Book>> GetBook(int id)
         {
-            var books = await _context.Books.FindAsync(id);
+            var book = await _context.Books.FindAsync(id);
 
-            if (books == null)
+            if (book == null)
             {
                 return NotFound();
             }
 
-            return books;
+            return book;
         }
 
         // PUT: api/Books/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBooks(int id, Book books)
+        public async Task<IActionResult> PutBook(int id, Book book)
         {
-            if (id != books.Id)
+            if (id != book.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(books).State = EntityState.Modified;
+            _context.Entry(book).State = EntityState.Modified;
 
             try
             {
@@ -57,7 +59,7 @@ namespace Library_management_system.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!BooksExists(id))
+                if (!BookExists(id))
                 {
                     return NotFound();
                 }
@@ -73,49 +75,33 @@ namespace Library_management_system.Controllers
         // POST: api/Books
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Book>> PostBooks(Book books)
+        public async Task<ActionResult<Book>> PostBook(Book book)
         {
-            if (books == null)
-            {
-                return BadRequest("Book is null.");
-            }
+            _context.Books.Add(book);
+            await _context.SaveChangesAsync();
 
-            try
-            {
-                await _context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Book ON");
-                _context.Books.Add(books);
-                await _context.SaveChangesAsync();
-                await _context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Book OFF");
-
-                return CreatedAtAction("GetBooks", new { id = books.Id }, books);
-            }
-            catch (DbUpdateException ex)
-            {
-                // Log the exception (ex)
-                return StatusCode(500, "An error occurred while saving the book.");
-            }
+            return CreatedAtAction("GetBook", new { id = book.Id }, book);
         }
 
         // DELETE: api/Books/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBooks(int id)
+        public async Task<IActionResult> DeleteBook(int id)
         {
-            var books = await _context.Books.FindAsync(id);
-            if (books == null)
+            var book = await _context.Books.FindAsync(id);
+            if (book == null)
             {
                 return NotFound();
             }
 
-            _context.Books.Remove(books);
+            _context.Books.Remove(book);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        private bool BooksExists(int id)
+        private bool BookExists(int id)
         {
             return _context.Books.Any(e => e.Id == id);
         }
     }
-
 }
