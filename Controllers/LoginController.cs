@@ -24,7 +24,7 @@ namespace Library_management_system.Controllers
             {
                 var response = new
                 {
-                    Message = "Login Sucess",
+                    Message = "login Succesful",
                     User = "Admin"
                 };
             return Ok(response);
