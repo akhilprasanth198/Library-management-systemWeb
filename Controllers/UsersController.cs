@@ -98,7 +98,35 @@ namespace Library_management_system.Controllers
 
             return NoContent();
         }
+        [HttpGet("search")]
+        public IActionResult SearchUsers(int?  uid= null, string?  name= null, string? email = null)
+        {
+            var user = _context.Users.AsQueryable();
 
+            if (uid.HasValue)
+            {
+                user = user.Where(b => b.UId == uid.Value);
+            }
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                user = user.Where(b => b.Name.ToLower().Contains(name.ToLower()));
+            }
+
+            if (!string.IsNullOrEmpty(email))
+            {
+                user = user.Where(b => b.Email.ToLower().Contains(email.ToLower()));
+            }
+
+            var filteredUser = user.ToList();
+
+            if (!filteredUser.Any())
+            {
+                return NotFound("No Users found matching the search criteria.");
+            }
+
+            return Ok(filteredUser);
+        }
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.UId == id);
