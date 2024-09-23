@@ -5,7 +5,7 @@
 namespace Library_management_system.Migrations
 {
     /// <inheritdoc />
-    public partial class userlogin : Migration
+    public partial class role : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

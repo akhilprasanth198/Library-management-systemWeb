@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Library_management_system.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240919064108_role")]
+    [Migration("20240919072859_role")]
     partial class role
     {
         /// <inheritdoc />

@@ -127,6 +127,50 @@ namespace Library_management_system.Controllers
 
             return Ok(filteredBooks);
         }
+        // Book Search
+        [HttpGet("searches")]
+        public async Task<ActionResult<IEnumerable<Book>>> SearchBooks(string bookname)
+        {
+            var books = await _context.Books
+                .Where(b => b.Title.Contains(bookname) || b.Author.Contains(bookname) || b.Language.Contains(bookname))
+                .ToListAsync();
+
+            return Ok(books);
+        }
+
+        // Borrow a Book
+        [HttpPost("borrow/{bookId}/{userId}")]
+        public async Task<IActionResult> BorrowBook(int bookId, int userId)
+        {
+            var book = await _context.Books.FindAsync(bookId);
+            if (book == null)
+            {
+                return NotFound();
+            }
+
+            if (book.Quantity <= 0)
+            {
+                return BadRequest("Book is not available.");
+            }
+
+            // Update book quantity
+            book.Quantity -= 1;
+            _context.Books.Update(book);
+
+            // Log the borrow action
+            var borrowEntry = new Borrow
+            {
+                BookId = bookId,
+                UserId = userId,
+                BorrowDate = DateTime.Now,
+                ReturnDate = null
+            };
+
+            _context.Borrows.Add(borrowEntry);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Book borrowed successfully.", book });
+        }
 
 
 
