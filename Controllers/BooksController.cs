@@ -171,6 +171,40 @@ namespace Library_management_system.Controllers
 
             return Ok(new { message = "Book borrowed successfully.", book });
         }
+        // Return a Book
+        [HttpPost("return/{bookId}/{userId}")]
+        public async Task<IActionResult> ReturnBook(int bookId, int userId)
+        {
+            // Find the book by its ID
+            var book = await _context.Books.FindAsync(bookId);
+            if (book == null)
+            {
+                return NotFound(new { message = "Book not found." });
+            }
+
+            // Increase the quantity of the book
+            book.Quantity += 1;
+            _context.Books.Update(book);
+
+            // Find the borrow entry for this book and user
+            var borrowEntry = await _context.Borrows
+                .FirstOrDefaultAsync(b => b.BookId == bookId && b.UserId == userId && b.ReturnDate == null);
+
+            if (borrowEntry == null)
+            {
+                return NotFound(new { message = "Borrow record not found." });
+            }
+
+            // Update the return date in the borrow record
+            borrowEntry.ReturnDate = DateTime.Now;
+            _context.Borrows.Update(borrowEntry);
+
+            // Save the changes to the database
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Book returned successfully." });
+        }
+
 
 
 

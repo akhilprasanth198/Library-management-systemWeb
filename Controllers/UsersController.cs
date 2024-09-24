@@ -127,6 +127,7 @@ namespace Library_management_system.Controllers
 
             return Ok(filteredUser);
         }
+
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.UId == id);
