@@ -141,17 +141,21 @@ namespace Library_management_system.Migrations
 
             modelBuilder.Entity("Library_management_system.Models.Borrow", b =>
                 {
-                    b.HasOne("Library_management_system.Models.Book", null)
+                    b.HasOne("Library_management_system.Models.Book", "Book")
                         .WithMany()
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Library_management_system.Models.User", null)
+                    b.HasOne("Library_management_system.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Book");
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

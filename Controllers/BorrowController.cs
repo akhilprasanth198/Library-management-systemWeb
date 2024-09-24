@@ -1,6 +1,7 @@
 ﻿using Library_management_system.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Library_management_system.Controllers
 {
@@ -8,60 +9,102 @@ namespace Library_management_system.Controllers
     [ApiController]
     public class BorrowController : ControllerBase
     {
-        private static List<Borrow> borrows = new List<Borrow>();
-        private static List<Book> books = new List<Book>();
-        private static List<User> users = new List<User>();
+        private readonly ApplicationDbContext _context;
 
-        [HttpPost("borrow")]
-        public IActionResult BorrowBook([FromBody] Borrow borrow)
+        public BorrowController(ApplicationDbContext context)
         {
-            // Check if the book is available
-            var book = books.FirstOrDefault(b => b.Id == borrow.BookId);
+            _context = context;
+        }
+
+        // Book Search
+        [HttpGet("searches")]
+        public async Task<ActionResult<IEnumerable<Book>>> SearchBooks(string bookname)
+        {
+            var books = await _context.Books
+                .Where(b => b.Title.Contains(bookname) || b.Author.Contains(bookname) || b.Language.Contains(bookname))
+                .ToListAsync();
+
+            return Ok(books);
+        }
+
+        [HttpPost("borrow/{bookId}/{userId}")]
+        public async Task<IActionResult> BorrowBook(int bookId, int userId)
+        {
+            // Check if book exists
+            var book = await _context.Books.FindAsync(bookId);
             if (book == null)
             {
-                return NotFound("Book not found");
+                return NotFound(new { message = "Book not found." });
             }
 
-            // Check if the user exists
-            var user = users.FirstOrDefault(u => u.UId == borrow.UserId);
+            // Check if book is available
+            if (book.Quantity <= 0)
+            {
+                return BadRequest(new { message = "Book is not available." });
+            }
+
+            // Check if user exists
+            var user = await _context.Users.FindAsync(userId);
             if (user == null)
             {
-                return NotFound("User not found");
+                return NotFound(new { message = "User not found." });
             }
 
-            // Check if the book is already borrowed
-            var existingBorrow = borrows.FirstOrDefault(b => b.BookId == borrow.BookId && b.ReturnDate == null);
-            if (existingBorrow != null)
+            // Update book quantity
+            book.Quantity -= 1;
+            _context.Books.Update(book);
+
+            // Log the borrow action
+            var borrowEntry = new Borrow
             {
-                return BadRequest("Book is already borrowed");
-            }
+                BookId = bookId,
+                UserId = userId,
+                BorrowDate = DateTime.Now,
+                ReturnDate = null
+            };
 
-            // Add the borrow record
-            borrow.BorrowDate = DateTime.Now;
-            borrows.Add(borrow);
-            return Ok("Book borrowed successfully");
+            _context.Borrows.Add(borrowEntry);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Book borrowed successfully.", book });
         }
 
-        [HttpPost("return")]
-        public IActionResult ReturnBook([FromBody] Borrow borrow)
+        // Update Borrow Log (Return Book)
+        [HttpPut("return/{borrowId}")]
+        public async Task<IActionResult> UpdateBorrowLog(int borrowId)
         {
-            var existingBorrow = borrows.FirstOrDefault(b => b.BookId == borrow.BookId && b.UserId == borrow.UserId && b.ReturnDate == null);
-            if (existingBorrow == null)
+            // Find the borrow record
+            var borrow = await _context.Borrows.FindAsync(borrowId);
+            if (borrow == null)
             {
-                return BadRequest("No record of this book being borrowed");
+                return NotFound("Borrow record not found.");
             }
 
-            // Mark the book as returned
-            existingBorrow.ReturnDate = DateTime.Now;
-            return Ok("Book returned successfully");
+            // Check if the book has already been returned
+            if (borrow.ReturnDate != null)
+            {
+                return BadRequest("Book has already been returned.");
+            }
+
+            // Set the return date to now
+            borrow.ReturnDate = DateTime.Now;
+            _context.Borrows.Update(borrow);
+
+            // Find the associated book
+            var book = await _context.Books.FindAsync(borrow.BookId);
+            if (book != null)
+            {
+                // Increase the quantity of the book when it's returned
+                book.Quantity += 1;
+                _context.Books.Update(book);
+            }
+
+            // Save changes
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Borrow log updated successfully.", borrow });
         }
 
-        [HttpGet("user-borrows/{userId}")]
-        public IActionResult GetUserBorrows(int userId)
-        {
-            var userBorrows = borrows.Where(b => b.UserId == userId && b.ReturnDate == null).ToList();
-            return Ok(userBorrows);
-        }
     }
 
 }

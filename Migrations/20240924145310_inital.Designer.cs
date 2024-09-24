@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Library_management_system.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240918044019_next")]
-    partial class next
+    [Migration("20240924145310_inital")]
+    partial class inital
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -96,6 +96,27 @@ namespace Library_management_system.Migrations
                     b.ToTable("Borrows");
                 });
 
+            modelBuilder.Entity("Library_management_system.Models.Login", b =>
+                {
+                    b.Property<int>("LoginId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoginId"));
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("LoginId");
+
+                    b.ToTable("Logins");
+                });
+
             modelBuilder.Entity("Library_management_system.Models.User", b =>
                 {
                     b.Property<int>("UId")
@@ -116,10 +137,6 @@ namespace Library_management_system.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("UId");
 
                     b.ToTable("Users");
@@ -127,17 +144,21 @@ namespace Library_management_system.Migrations
 
             modelBuilder.Entity("Library_management_system.Models.Borrow", b =>
                 {
-                    b.HasOne("Library_management_system.Models.Book", null)
+                    b.HasOne("Library_management_system.Models.Book", "Book")
                         .WithMany()
                         .HasForeignKey("BookId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Library_management_system.Models.User", null)
+                    b.HasOne("Library_management_system.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Book");
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

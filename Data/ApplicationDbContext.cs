@@ -17,12 +17,12 @@ public class ApplicationDbContext : DbContext
 
                 // Optionally, define relationships or additional configurations
                 modelBuilder.Entity<Borrow>()
-                    .HasOne<Book>()
+                    .HasOne(b => b.Book)
                     .WithMany()
                     .HasForeignKey(b => b.BookId);
 
                 modelBuilder.Entity<Borrow>()
-                    .HasOne<User>()
+                    .HasOne(b => b.User)
                     .WithMany()
                     .HasForeignKey(b => b.UserId);
 
