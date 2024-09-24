@@ -70,40 +70,34 @@ namespace Library_management_system.Controllers
         }
 
         // Update Borrow Log (Return Book)
-        [HttpPut("return/{borrowId}")]
-        public async Task<IActionResult> UpdateBorrowLog(int borrowId)
+        [HttpPut("return")]
+        public async Task<IActionResult> ReturnBook([FromBody] ReturnBookModel model)
         {
-            // Find the borrow record
-            var borrow = await _context.Borrows.FindAsync(borrowId);
-            if (borrow == null)
+            var borrowEntry = await _context.Borrows
+                .FirstOrDefaultAsync(b => b.BookId == model.BookId && b.UserId == model.UserId && b.ReturnDate == null);
+
+            if (borrowEntry == null)
             {
-                return NotFound("Borrow record not found.");
+                return NotFound(new { message = "No active borrow found for this book and user." });
             }
 
-            // Check if the book has already been returned
-            if (borrow.ReturnDate != null)
-            {
-                return BadRequest("Book has already been returned.");
-            }
+            // Set the return date
+            borrowEntry.ReturnDate = DateTime.Now;
 
-            // Set the return date to now
-            borrow.ReturnDate = DateTime.Now;
-            _context.Borrows.Update(borrow);
-
-            // Find the associated book
-            var book = await _context.Books.FindAsync(borrow.BookId);
+            // Update the book quantity
+            var book = await _context.Books.FindAsync(model.BookId);
             if (book != null)
             {
-                // Increase the quantity of the book when it's returned
                 book.Quantity += 1;
-                _context.Books.Update(book);
             }
 
-            // Save changes
+            _context.Borrows.Update(borrowEntry);
+            _context.Books.Update(book);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Borrow log updated successfully.", borrow });
+            return Ok(new { message = "Book returned successfully." });
         }
+
 
     }
 
